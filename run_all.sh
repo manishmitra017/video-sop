@@ -24,4 +24,9 @@ echo "
 --- Step 3: Analyzing Frames and Appending to Journey ---"
 python -m screenshare_to_text.analyze_frames
 
+echo "
+--- Step 4: Generating Final Summary ---"
+python -m screenshare_to_text.generate_summary
+
+
 echo "\n--- Pipeline Complete ---"

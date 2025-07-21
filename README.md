@@ -7,10 +7,10 @@ This project transforms a screen recording video into a detailed, step-by-step u
 The pipeline automates the entire process of converting a video into a user journey:
 
 1.  **Frame Extraction:** The script first extracts frames from the input video at a regular interval (e.g., every 2 seconds).
-2.  **Overlapping Frame Analysis:** It then analyzes these frames in overlapping chunks (e.g., frames 1-2, 2-3, 3-4). This sliding window approach provides context and ensures that no user actions are missed between frames. A multimodal LLM describes the user's actions, including clicks, typing, URL navigation, and other interactions in detail for each chunk.
-3.  **Journey Synthesis:** Finally, the script synthesizes the descriptions from all chunks into a single, coherent user journey. The output is a well-structured Markdown file that provides a clear, easy-to-follow narrative of the user's on-screen activity.
+2.  **Incremental Journey Creation:** It then analyzes these frames in overlapping chunks (e.g., frames 1-2, 2-3, 3-4). For each chunk, a multimodal LLM generates a highly detailed description of the user's actions, including clicks, typing, URL navigation, and all visible on-screen text. This detailed log is appended incrementally to a `_journey.md` file.
+3.  **Summary Generation:** After the detailed journey is complete, a final script reads the entire log and uses an LLM to synthesize a concise, human-readable summary of the key actions and their corresponding URLs.
 
-The final document is designed to be easily understood by both human readers and other AI systems.
+This process results in two distinct output files, one optimized for machine processing and the other for human review.
 
 ## How to Run
 
@@ -39,4 +39,7 @@ The final document is designed to be easily understood by both human readers and
 
 ### Output
 
-The script will perform all the necessary steps and, upon completion, you will find the generated user journey in the `journeys/` directory. The output file will be a Markdown file named after the original video (e.g., `journeys/your_video_name_journey.md`).
+Upon completion, you will find two Markdown files in the `journeys/` directory, both named after the original video:
+
+*   `your_video_name_journey.md`: An extremely detailed, step-by-step log of every action, including all visible on-screen text. This file is designed to be processed by another AI.
+*   `your_video_name_summary.md`: A concise, human-readable summary of the user's key actions, with the corresponding URL for each step.
