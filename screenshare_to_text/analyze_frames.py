@@ -8,41 +8,63 @@ from dotenv import load_dotenv
 load_dotenv()
 litellm.api_key = os.getenv("GOOGLE_API_KEY")
 
-def analyze_single_frame(image_path: str, output_dir: str):
+def analyze_frame_chunk(image_paths: list[str], output_dir: str, chunk_name: str):
     """
-    Analyzes a single image and saves the description to a text file.
+    Analyzes a chunk of images and saves the description to a text file.
     """
-    print(f"--- Analyzing: {os.path.basename(image_path)} ---")
+    print(f"--- Analyzing chunk: {chunk_name} ---")
     
-    if not os.path.isfile(image_path):
-        print(f"Error: File not found at {image_path}")
+    messages = [
+        {
+            "role": "user", 
+            "content": [
+                {"type": "text", "text": """
+                    Analyze the user's actions across these consecutive frames from a screen recording.
+                    Provide a detailed, step-by-step description of what the user is doing.
+                    Focus on specific actions, such as mouse clicks, typing, scrolling, and navigating to URLs.
+                    If a URL is visible, please extract and state it.
+                    Describe the changes between the frames to create a narrative of the user's journey.
+                    """
+                }
+            ]
+        }
+    ]
+
+    for image_path in image_paths:
+        if not os.path.isfile(image_path):
+            print(f"Error: File not found at {image_path}")
+            continue
+        try:
+            with open(image_path, "rb") as f:
+                base64_frame = base64.b64encode(f.read()).decode("utf-8")
+            messages[0]["content"].append(
+                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_frame}"}}
+            )
+        except Exception as e:
+            print(f"An error occurred while processing {os.path.basename(image_path)}: {e}")
+            return
+
+    if len(messages[0]["content"]) <= 1:
+        print("No images to analyze.")
         return
 
     try:
-        with open(image_path, "rb") as f:
-            base64_frame = base64.b64encode(f.read()).decode("utf-8")
-
         vision_model = "gemini/gemini-1.5-flash-latest"
-        messages = [{"role": "user", "content": [
-            {"type": "text", "text": "Describe the user's action in this single frame of a screen recording. Focus on the most significant action."},
-            {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_frame}"}},
-        ]}]
-        
         response = litellm.completion(model=vision_model, messages=messages)
         description = response.choices[0].message.content
 
-        output_filename = os.path.splitext(os.path.basename(image_path))[0] + ".txt"
+        output_filename = f"{chunk_name}.txt"
         output_path = os.path.join(output_dir, output_filename)
         with open(output_path, "w") as f:
             f.write(description)
         print(f"Saved analysis to: {output_path}")
 
     except Exception as e:
-        print(f"An error occurred while processing {os.path.basename(image_path)}: {e}")
+        print(f"An error occurred during analysis for chunk {chunk_name}: {e}")
 
-def process_all_frames(frames_dir: str, output_dir: str):
+def process_all_frames_in_chunks(frames_dir: str, output_dir: str, window_size: int = 2, stride: int = 1):
     """
-    Processes all JPG frames in a directory and saves the analysis.
+    Processes all JPG frames in a directory in overlapping chunks and saves the analysis.
     """
     print(f"\n--- Starting batch analysis for directory: {frames_dir} ---")
     os.makedirs(output_dir, exist_ok=True)
@@ -52,14 +74,15 @@ def process_all_frames(frames_dir: str, output_dir: str):
         print("No JPG frames found to analyze.")
         return
         
-    for frame_file in frame_files:
-        image_path = os.path.join(frames_dir, frame_file)
-        analyze_single_frame(image_path, output_dir)
+    for i in range(0, len(frame_files) - window_size + 1, stride):
+        chunk_files = frame_files[i:i+window_size]
+        image_paths = [os.path.join(frames_dir, f) for f in chunk_files]
+        chunk_name = f"chunk_{i:04d}_{os.path.splitext(chunk_files[0])[0]}_to_{os.path.splitext(chunk_files[-1])[0]}"
+        analyze_frame_chunk(image_paths, output_dir, chunk_name)
         
     print("\n--- Batch analysis complete. ---")
 
 if __name__ == "__main__":
-    # Find the first subdirectory in the frames directory
     frames_base_dir = "frames"
     subdirectories = [d for d in os.listdir(frames_base_dir) if os.path.isdir(os.path.join(frames_base_dir, d))]
     
@@ -69,4 +92,4 @@ if __name__ == "__main__":
         
     frames_directory = os.path.join(frames_base_dir, subdirectories[0])
     results_directory = "analysis_results"
-    process_all_frames(frames_directory, results_directory)
+    process_all_frames_in_chunks(frames_directory, results_directory)

@@ -51,5 +51,11 @@ if __name__ == "__main__":
     
     video_name_without_ext = os.path.splitext(video_file)[0]
     output_directory = os.path.join("frames", video_name_without_ext)
+
+    # Save the video name for later steps
+    metadata_dir = "analysis_results/metadata"
+    os.makedirs(metadata_dir, exist_ok=True)
+    with open(os.path.join(metadata_dir, "video_name.txt"), "w") as f:
+        f.write(video_name_without_ext)
     
     extract_frames_directly(video_path, output_directory)

@@ -27,14 +27,15 @@ def generate_final_journey(analysis_dir: str, output_file: str):
     full_text = ""
     for file in analysis_files:
         with open(os.path.join(analysis_dir, file), "r") as f:
-            full_text += f"## Frame: {file}\n{f.read()}\n\n"
+            full_text += f"## Chunk: {file}\n{f.read()}\n\n"
             
     # Prepare the prompt for the final synthesis
     synthesis_prompt = f"""
-    The following is a series of descriptions from individual frames of a screen recording.
-    Please synthesize these descriptions into a single, coherent, step-by-step user journey.
-    Focus on creating a clear narrative that explains what the user was trying to accomplish.
-    Format the output as a clean, easy-to-read Markdown document.
+    The following is a series of detailed descriptions of a user's actions, captured from consecutive, overlapping frames of a screen recording.
+    Please synthesize these descriptions into a single, coherent, and highly detailed step-by-step user journey.
+    The final output must be a clear narrative that explains precisely what the user was trying to accomplish, including any URLs they visited, text they entered, and buttons they clicked.
+    This document will be used by another AI system and a human, so it must be unambiguous and easy to follow.
+    Format the output as a clean, well-structured Markdown document.
 
     ---
     {full_text}
@@ -50,6 +51,9 @@ def generate_final_journey(analysis_dir: str, output_file: str):
         response = litellm.completion(model=synthesis_model, messages=messages)
         final_journey = response.choices[0].message.content
         
+        # Ensure the output directory exists
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+        
         # Save the final journey to the specified output file
         with open(output_file, "w") as f:
             f.write(final_journey)
@@ -62,6 +66,17 @@ def generate_final_journey(analysis_dir: str, output_file: str):
         print(e)
 
 if __name__ == "__main__":
-    analysis_directory = "analysis_results"
-    final_output_file = "final_user_journey.md"
-    generate_final_journey(analysis_directory, final_output_file)
+    analysis_results_dir = "analysis_results"
+    
+    # Read the video name from the metadata file
+    try:
+        with open(os.path.join(analysis_results_dir, "metadata", "video_name.txt"), "r") as f:
+            video_name = f.read().strip()
+    except FileNotFoundError:
+        print("Error: video_name.txt not found. Please run the extract_frames script first.")
+        sys.exit(1)
+
+    journeys_dir = "journeys"
+    final_output_file = os.path.join(journeys_dir, f"{video_name}_journey.md")
+    
+    generate_final_journey(analysis_results_dir, final_output_file)
