@@ -12,13 +12,16 @@ mkdir -p analysis_results frames journeys
 echo "\n--- Installing Dependencies ---"
 uv pip install -e .
 
-echo "\n--- Step 1: Extracting Frames ---"
+echo "
+--- Step 1: Extracting Frames ---"
 python -m screenshare_to_text.extract_frames
 
-echo "\n--- Step 2: Analyzing Frames ---"
-python -m screenshare_to_text.analyze_frames
-
-echo "\n--- Step 3: Creating Final Journey ---"
+echo "
+--- Step 2: Initializing Journey File ---"
 python -m screenshare_to_text.create_journey
+
+echo "
+--- Step 3: Analyzing Frames and Appending to Journey ---"
+python -m screenshare_to_text.analyze_frames
 
 echo "\n--- Pipeline Complete ---"

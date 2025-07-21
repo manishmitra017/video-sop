@@ -8,9 +8,9 @@ from dotenv import load_dotenv
 load_dotenv()
 litellm.api_key = os.getenv("GOOGLE_API_KEY")
 
-def analyze_frame_chunk(image_paths: list[str], output_dir: str, chunk_name: str):
+def analyze_and_append_chunk(image_paths: list[str], journey_file_path: str, chunk_name: str):
     """
-    Analyzes a chunk of images and saves the description to a text file.
+    Analyzes a chunk of images and appends the detailed analysis to the journey file.
     """
     print(f"--- Analyzing chunk: {chunk_name} ---")
     
@@ -19,11 +19,15 @@ def analyze_frame_chunk(image_paths: list[str], output_dir: str, chunk_name: str
             "role": "user", 
             "content": [
                 {"type": "text", "text": """
-                    Analyze the user's actions across these consecutive frames from a screen recording.
-                    Provide a detailed, step-by-step description of what the user is doing.
-                    Focus on specific actions, such as mouse clicks, typing, scrolling, and navigating to URLs.
-                    If a URL is visible, please extract and state it.
-                    Describe the changes between the frames to create a narrative of the user's journey.
+                    Analyze the user's actions across these consecutive frames from a screen recording with extreme detail.
+                    Your output will be used by another AI, so precision is critical.
+                    
+                    For each step, provide the following in Markdown format:
+                    1.  **Action:** A detailed, step-by-step description of the user's action (e.g., "Clicked the 'Search' button," "Typed 'hello world' into the search bar").
+                    2.  **URL:** The full, exact URL visible in the address bar.
+                    3.  **Visible Text:** A verbatim copy of all text visible on the screen.
+                    
+                    Describe the changes between the frames to create a narrative of the user's journey. Do not summarize or make assumptions.
                     """
                 }
             ]
@@ -49,25 +53,24 @@ def analyze_frame_chunk(image_paths: list[str], output_dir: str, chunk_name: str
         return
 
     try:
-        vision_model = "gemini/gemini-1.5-flash-latest"
+        vision_model = "gemini/gemini-1.5-pro-latest" # Using a more powerful model for better text extraction
         response = litellm.completion(model=vision_model, messages=messages)
         description = response.choices[0].message.content
 
-        output_filename = f"{chunk_name}.txt"
-        output_path = os.path.join(output_dir, output_filename)
-        with open(output_path, "w") as f:
+        with open(journey_file_path, "a") as f:
+            f.write(f"## Step: {chunk_name}\n\n")
             f.write(description)
-        print(f"Saved analysis to: {output_path}")
+            f.write("\n\n---\n\n")
+        print(f"Appended analysis to: {journey_file_path}")
 
     except Exception as e:
         print(f"An error occurred during analysis for chunk {chunk_name}: {e}")
 
-def process_all_frames_in_chunks(frames_dir: str, output_dir: str, window_size: int = 2, stride: int = 1):
+def process_all_frames_in_chunks(frames_dir: str, journey_file_path: str, window_size: int = 2, stride: int = 1):
     """
     Processes all JPG frames in a directory in overlapping chunks and saves the analysis.
     """
     print(f"\n--- Starting batch analysis for directory: {frames_dir} ---")
-    os.makedirs(output_dir, exist_ok=True)
     
     frame_files = sorted([f for f in os.listdir(frames_dir) if f.lower().endswith(".jpg")])
     if not frame_files:
@@ -78,7 +81,7 @@ def process_all_frames_in_chunks(frames_dir: str, output_dir: str, window_size: 
         chunk_files = frame_files[i:i+window_size]
         image_paths = [os.path.join(frames_dir, f) for f in chunk_files]
         chunk_name = f"chunk_{i:04d}_{os.path.splitext(chunk_files[0])[0]}_to_{os.path.splitext(chunk_files[-1])[0]}"
-        analyze_frame_chunk(image_paths, output_dir, chunk_name)
+        analyze_and_append_chunk(image_paths, journey_file_path, chunk_name)
         
     print("\n--- Batch analysis complete. ---")
 
@@ -91,5 +94,16 @@ if __name__ == "__main__":
         sys.exit(1)
         
     frames_directory = os.path.join(frames_base_dir, subdirectories[0])
-    results_directory = "analysis_results"
-    process_all_frames_in_chunks(frames_directory, results_directory)
+    
+    # Read the video name from the metadata file
+    try:
+        with open(os.path.join("analysis_results", "metadata", "video_name.txt"), "r") as f:
+            video_name = f.read().strip()
+    except FileNotFoundError:
+        print("Error: video_name.txt not found. Please run the extract_frames and create_journey scripts first.")
+        sys.exit(1)
+
+    journeys_dir = "journeys"
+    final_output_file = os.path.join(journeys_dir, f"{video_name}_journey.md")
+
+    process_all_frames_in_chunks(frames_directory, final_output_file)
