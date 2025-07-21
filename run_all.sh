@@ -5,7 +5,11 @@
 # Ensure the virtual environment is activated
 source .venv/bin/activate
 
-echo "--- Installing Dependencies ---"
+echo "--- Cleaning up old results ---"
+rm -rf analysis_results frames journeys
+mkdir -p analysis_results frames journeys
+
+echo "\n--- Installing Dependencies ---"
 uv pip install -e .
 
 echo "\n--- Step 1: Extracting Frames ---"
