@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "screenshare-ro-text"
 version = "0.1.0"
-description = ""
-authors = []
+description = "A project that analyzes screen recordings to generate detailed, step-by-step user journey descriptions in Markdown format."
+authors = ["Manish Mitra"]
 
 packages = [
     { include = "screenshare_to_text" },
