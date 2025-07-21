@@ -1,0 +1,1501 @@
+TITLE: FastAPI Integration for ADK Agents
+DESCRIPTION: This documentation describes how to expose ADK agents as production-ready APIs using FastAPI. It details the `get_fast_api_app` helper function from `google.adk.cli.fast_api` which generates a FastAPI application from an agent directory, including standard endpoints. It also demonstrates how to add custom routes to the generated FastAPI app.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/adk_project_overview_and_architecture.md#_snippet_1
+
+LANGUAGE: Python
+CODE:
+```
+from google.adk.cli.fast_api import get_fast_api_app
+app = get_fast_api_app(agent_dir="./agents")
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+```
+
+LANGUAGE: APIDOC
+CODE:
+```
+Function: get_fast_api_app(agent_dir: str)
+  Description: Creates a FastAPI application from a specified ADK agent directory.
+  Parameters:
+    agent_dir (str): The path to the directory containing ADK agents.
+  Returns: A FastAPI application instance.
+  Standard Endpoints:
+    /list-apps: Lists available ADK applications.
+    /run_sse: Provides Server-Sent Events for streaming responses.
+  Wire Format: camelCase for all standard endpoints.
+
+Endpoint: GET /health
+  Description: A custom endpoint demonstrating how to add additional routes to the generated FastAPI app.
+  Returns:
+    JSON object: {"status": "ok"}
+```
+
+----------------------------------------
+
+TITLE: Google BigQuery API Tool Definitions
+DESCRIPTION: Definitions for various Google BigQuery API tools available in the `google.adk.tools.google_api_tool` module, covering operations on datasets and tables. These tools facilitate listing, retrieving, and creating BigQuery resources.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/google_api/README.md#_snippet_0
+
+LANGUAGE: APIDOC
+CODE:
+```
+bigquery_datasets_list()
+  - Description: Lists all datasets accessible by the authenticated user.
+  - Parameters: None
+  - Returns: A list of dataset objects.
+
+bigquery_datasets_get(dataset_id: str)
+  - Description: Retrieves detailed information for a specific BigQuery dataset.
+  - Parameters:
+    - dataset_id (str): The ID of the dataset to retrieve.
+  - Returns: A dataset object with its details.
+
+bigquery_datasets_insert(dataset_id: str, location: str, ...)
+  - Description: Creates a new BigQuery dataset.
+  - Parameters:
+    - dataset_id (str): The ID for the new dataset.
+    - location (str): The geographic location for the dataset (e.g., 'us', 'eu').
+    - ... (additional dataset properties as needed)
+  - Returns: The newly created dataset object.
+
+bigquery_tables_list(dataset_id: str)
+  - Description: Lists all tables within a specified dataset.
+  - Parameters:
+    - dataset_id (str): The ID of the dataset whose tables are to be listed.
+  - Returns: A list of table objects.
+
+bigquery_tables_get(dataset_id: str, table_id: str)
+  - Description: Retrieves detailed information for a specific table within a dataset.
+  - Parameters:
+    - dataset_id (str): The ID of the dataset containing the table.
+    - table_id (str): The ID of the table to retrieve.
+  - Returns: A table object with its details.
+
+bigquery_tables_insert(dataset_id: str, table_id: str, schema: list, ...)
+  - Description: Creates a new table within a specified dataset.
+  - Parameters:
+    - dataset_id (str): The ID of the dataset where the table will be created.
+    - table_id (str): The ID for the new table.
+    - schema (list): A list defining the table's columns, including name, type, and mode (e.g., required, optional).
+    - ... (additional table properties as needed)
+  - Returns: The newly created table object.
+```
+
+----------------------------------------
+
+TITLE: Example Debug Output for LiteLLM Request
+DESCRIPTION: This bash output shows an example of the debug information provided by LiteLLM when debugging is enabled. It displays the `curl` command equivalent of the HTTP request sent to the Ollama server, including the endpoint, method, and JSON payload, which is useful for verifying API calls.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/hello_world_ollama/README.md#_snippet_8
+
+LANGUAGE: bash
+CODE:
+```
+quest Sent from LiteLLM:
+curl -X POST \
+http://localhost:11434/api/chat \
+-d '{'model': 'mistral-small3.1', 'messages': [{'role': 'system', 'content': ...
+```
+
+----------------------------------------
+
+TITLE: ADK Public API Surface Definition and Breaking Change Checklist
+DESCRIPTION: Defines the comprehensive public API surface for the Google ADK project, including Python components, built-in tools, data structures, API server interactions, and CLI. It also details specific types of changes that are considered breaking and necessitate a major version increment.
+SOURCE: https://github.com/google/adk-python/blob/main/AGENTS.md#_snippet_6
+
+LANGUAGE: APIDOC
+CODE:
+```
+Public API Surface Definition:
+  - All public classes, methods, and functions in the google.adk namespace.
+  - The names, required parameters, and expected behavior of all built-in Tools (e.g., google_search, BuiltInCodeExecutor).
+  - The structure and schema of persisted data, including Session data, Memory, and Evaluation datasets.
+  - The JSON request/response format of the ADK API server (FastAPI server) used by adk web, including field casing conventions.
+  - The command-line interface (CLI) commands, arguments, and flags (e.g., adk deploy).
+  - The expected file structure for agent definitions that are loaded by the framework (e.g., the agent.py convention).
+
+Checklist for Breaking Changes (necessitate MAJOR version bump):
+  - API Signature Change: Renaming, removing, or altering required parameters of any public class, method, or function (e.g., removal of list_events method from BaseSessionService).
+  - Architectural Shift: Fundamental change to a core component's behavior (e.g., making all service methods async, which requires consumers to use await).
+  - Data Schema Change: Non-additive change to a persisted data schema that renders old data unreadable or invalid (e.g., redesign of the MemoryService and evaluation dataset schemas).
+  - Tool Interface Change: Renaming a built-in tool, changing its required parameters, or altering its fundamental purpose (e.g., replacing BuiltInCodeExecutionTool with BuiltInCodeExecutor and moving it from the tools parameter to the code_executor parameter of an Agent).
+  - Configuration Change: Altering the required structure of configuration files or agent definition files that the framework loads (e.g., the simplification of the agent.py structure for MCPToolset).
+  - Wire Format Change: Modifying the data format for API server interactions (e.g., the switch from snake_case to camelCase for all JSON payloads).
+  - Dependency Removal: Removing support for a previously integrated third-party library or tool type.
+```
+
+----------------------------------------
+
+TITLE: ADK BigQuery Tools API Reference
+DESCRIPTION: Reference for the BigQuery first-party tools available in the `google.adk.tools.bigquery` module, detailing their purpose and basic usage.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/bigquery/README.md#_snippet_0
+
+LANGUAGE: APIDOC
+CODE:
+```
+google.adk.tools.bigquery.list_dataset_ids()
+  - Fetches BigQuery dataset IDs present in a GCP project.
+
+google.adk.tools.bigquery.get_dataset_info(dataset_id: str)
+  - Fetches metadata about a BigQuery dataset.
+
+google.adk.tools.bigquery.list_table_ids(dataset_id: str)
+  - Fetches table IDs present in a BigQuery dataset.
+
+google.adk.tools.bigquery.get_table_info(dataset_id: str, table_id: str)
+  - Fetches metadata about a BigQuery table.
+
+google.adk.tools.bigquery.execute_sql(sql_query: str)
+  - Runs a SQL query in BigQuery.
+```
+
+----------------------------------------
+
+TITLE: Set OpenAI API Environment Variables for Ollama Compatibility
+DESCRIPTION: These commands set the `OPENAI_API_BASE` and `OPENAI_API_KEY` environment variables to point to a local Ollama server's OpenAI-compatible endpoint and provide a placeholder API key. This configuration is required when using the `openai` provider with LiteLLM to route requests to Ollama, ensuring proper communication for agents.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/hello_world_ollama/README.md#_snippet_6
+
+LANGUAGE: bash
+CODE:
+```
+export OPENAI_API_BASE=http://localhost:11434/v1
+export OPENAI_API_KEY=anything
+adk web
+```
+
+----------------------------------------
+
+TITLE: ADK Agent Interaction Examples
+DESCRIPTION: These examples illustrate typical user interactions with the ADK multi-agent system, demonstrating how the root agent delegates tasks to the YouTube Search Agent (no authentication) and the BigQuery Agent (requiring OAuth authentication). It shows the flow from user query to agent response, including the OAuth redirection and successful authentication.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/a2a_auth/README.md#_snippet_3
+
+LANGUAGE: APIDOC
+CODE:
+```
+YouTube Search (No Authentication Required):
+User: Search for 3 Taylor Swift music videos
+Agent: I'll help you search for Taylor Swift music videos on YouTube.
+[Agent delegates to YouTube Search Agent]
+Agent: I found 3 Taylor Swift music videos:
+1. "Anti-Hero" - Official Music Video
+2. "Shake It Off" - Official Music Video
+3. "Blank Space" - Official Music Video
+
+BigQuery Operations (OAuth Required):
+User: List my BigQuery datasets
+Agent: I'll help you access your BigQuery datasets. This requires authentication with your Google account.
+[Agent delegates to BigQuery Agent]
+Agent: To access your BigQuery data, please complete the OAuth authentication.
+[OAuth flow initiated - user redirected to Google authentication]
+User: [Completes OAuth flow in browser]
+Agent: Authentication successful! Here are your BigQuery datasets:
+- dataset_1: Customer Analytics
+- dataset_2: Sales Data
+- dataset_3: Marketing Metrics
+
+Dataset Management (Using Existing OAuth Token):
+User: Show me details for my Customer Analytics dataset
+Agent: I'll get the details for your Customer Analytics dataset.
+[Using existing OAuth token]
+Agent: Customer Analytics Dataset Details:
+- Created: 2024-01-15
+- Location: US
+- Tables: 5
+- Description: Customer behavior and analytics data
+```
+
+----------------------------------------
+
+TITLE: Clone the ADK Python Repository
+DESCRIPTION: Clones the `google/adk-python` repository from GitHub and navigates into the project directory. This is the initial step for setting up the development environment.
+SOURCE: https://github.com/google/adk-python/blob/main/CONTRIBUTING.md#_snippet_0
+
+LANGUAGE: shell
+CODE:
+```
+gh repo clone google/adk-python
+cd adk-python
+```
+
+----------------------------------------
+
+TITLE: Start GenAI Toolbox Server with Tools Configuration
+DESCRIPTION: Launches the GenAI Toolbox server, instructing it to load and utilize tools definitions from a specified YAML configuration file. This command makes the defined tools available for the agent's operation.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/toolbox_agent/README.md#_snippet_3
+
+LANGUAGE: bash
+CODE:
+```
+toolbox --tools-file "tools.yaml"
+```
+
+----------------------------------------
+
+TITLE: Configure OAuth Client Credentials in .env File
+DESCRIPTION: Set your Google OAuth client ID and client secret as environment variables in the project's .env file. These credentials are essential for authenticating your application with the Google Calendar API through ADK.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/oauth_calendar_agent/README.md#_snippet_0
+
+LANGUAGE: plaintext
+CODE:
+```
+OAUTH_CLIENT_ID={your client id}
+OAUTH_CLIENT_SECRET={your client secret}
+```
+
+----------------------------------------
+
+TITLE: Sample Interaction Prompts for Jira Agent
+DESCRIPTION: These are example natural language prompts that can be used to interact with the ADK agent once it's running. They demonstrate common commands for querying and creating Jira issues and projects through the agent's interface.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/application_integration_agent/README.md#_snippet_2
+
+LANGUAGE: text
+CODE:
+```
+Can you list me all the issues ?
+Can you list me all the projects ?
+Can you create an issue: "Bug in product XYZ" in project ABC ?
+```
+
+----------------------------------------
+
+TITLE: Install Google GenAI Toolbox Binary
+DESCRIPTION: Downloads and makes executable the Google GenAI Toolbox binary for a specified operating system and architecture. This command fetches the `toolbox` executable from a Google Cloud Storage bucket.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/toolbox_agent/README.md#_snippet_0
+
+LANGUAGE: bash
+CODE:
+```
+export OS="linux/amd64" # one of linux/amd64, darwin/arm64, darwin/amd64, or windows/amd64
+curl -O https://storage.googleapis.com/genai-toolbox/v0.5.0/$OS/toolbox
+chmod +x toolbox
+```
+
+----------------------------------------
+
+TITLE: Start Remote A2A Prime Agent Server
+DESCRIPTION: Command to start the remote A2A server that hosts the prime checking agent on port 8001. This service must be running before the main agent can utilize the prime checking functionality.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/a2a_basic/README.md#_snippet_0
+
+LANGUAGE: bash
+CODE:
+```
+adk api_server --a2a --port 8001 contributing/samples/a2a_basic/remote_a2a
+```
+
+----------------------------------------
+
+TITLE: Configure ADK Agent with LiteLLM `openai` Provider for Ollama
+DESCRIPTION: This Python code illustrates how to initialize an ADK `Agent` using the `LiteLlm` wrapper with the `openai` provider, while still pointing to an Ollama model. This setup allows leveraging the OpenAI API compatibility layer provided by Ollama, enabling the use of OpenAI-compatible tools and libraries with local Ollama models.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/hello_world_ollama/README.md#_snippet_5
+
+LANGUAGE: python
+CODE:
+```
+root_agent = Agent(
+    model=LiteLlm(model="openai/mistral-small3.1"),
+    name="dice_agent",
+    description=(
+        "hello world agent that can roll a dice of 8 sides and check prime"
+        " numbers."
+    ),
+    instruction="""
+      You roll dice and answer questions about the outcome of the dice rolls.
+    """,
+    tools=[
+        roll_die,
+        check_prime,
+    ],
+)
+```
+
+----------------------------------------
+
+TITLE: Build Python Wheel File with uv
+DESCRIPTION: Builds the Python wheel distribution file for the project using `uv`. This command compiles the project into a distributable package.
+SOURCE: https://github.com/google/adk-python/blob/main/CONTRIBUTING.md#_snippet_6
+
+LANGUAGE: shell
+CODE:
+```
+uv build
+```
+
+----------------------------------------
+
+TITLE: ADK Issue Triaging Assistant Environment Variables Configuration
+DESCRIPTION: This section details the essential environment variables required for the ADK Issue Triaging Assistant to function correctly in both interactive and GitHub Workflow modes. These variables configure access to GitHub and the Gemini API, specify the target repository, and control the agent's interaction behavior.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/adk_triaging_agent/README.md#_snippet_2
+
+LANGUAGE: APIDOC
+CODE:
+```
+Environment Variables:
+
+GITHUB_TOKEN:
+  - Type: String
+  - Required: Yes
+  - Description: A GitHub Personal Access Token with `issues:write` permissions. Essential for the agent to interact with GitHub issues. Required for both interactive and workflow modes.
+
+GOOGLE_API_KEY:
+  - Type: String
+  - Required: Yes
+  - Description: Your API key for the Gemini API. Used by the large language model for issue analysis. Required for both interactive and workflow modes.
+
+OWNER:
+  - Type: String
+  - Required: No (but recommended for clarity)
+  - Description: The GitHub organization or username that owns the target repository (e.g., `google`). Specifies the context for GitHub API calls. Needed for both modes.
+
+REPO:
+  - Type: String
+  - Required: No (but recommended for clarity)
+  - Description: The name of the GitHub repository (e.g., `adk-python`). Identifies the specific repository for issue triaging. Needed for both modes.
+
+INTERACTIVE:
+  - Type: Integer (0 or 1)
+  - Required: No
+  - Description: Controls the agent's interaction mode.
+    - Set to `0` for automated, non-interactive operation (e.g., in GitHub Actions).
+    - Set to `1` or leave unset for interactive mode, where user confirmation is requested before applying labels.
+
+Usage Notes:
+  - For local interactive execution, these variables can be placed in a `.env` file in the project's root directory.
+  - For GitHub workflow execution, they should be configured as repository secrets within GitHub.
+```
+
+----------------------------------------
+
+TITLE: Install All Project Dependencies with uv
+DESCRIPTION: Installs all project dependencies, including optional extras, into the active virtual environment using `uv`. This command ensures all necessary packages for development are available.
+SOURCE: https://github.com/google/adk-python/blob/main/CONTRIBUTING.md#_snippet_3
+
+LANGUAGE: shell
+CODE:
+```
+uv sync --all-extras
+```
+
+----------------------------------------
+
+TITLE: Set Notion API Key Environment Variable
+DESCRIPTION: This command sets the `NOTION_API_KEY` environment variable, which is essential for the Notion MCP agent to authenticate with the Notion API. Users must replace the placeholder with their actual API key obtained from Notion.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/mcp_stdio_notion_agent/README.md#_snippet_0
+
+LANGUAGE: bash
+CODE:
+```
+export NOTION_API_KEY=<your_notion_api_key>
+```
+
+----------------------------------------
+
+TITLE: Start ADK Web Server
+DESCRIPTION: Executes the `adk web` command to launch the ADK web server. This command should be run from the root directory that contains the `live_bidi_streaming_agent` folder, making the ADK Web UI accessible locally.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/live_bidi_streaming_single_agent/readme.md#_snippet_0
+
+LANGUAGE: bash
+CODE:
+```
+adk web
+```
+
+----------------------------------------
+
+TITLE: Define a Multi-Agent System with ADK Python
+DESCRIPTION: This Python example illustrates how to construct a multi-agent system within the ADK framework by composing multiple specialized agents. It defines individual `LlmAgent` instances (greeter, task_executor) and then assigns them as sub-agents to a `Coordinator` agent, enabling complex workflows and coordinated task execution.
+SOURCE: https://github.com/google/adk-python/blob/main/README.md#_snippet_3
+
+LANGUAGE: python
+CODE:
+```
+from google.adk.agents import LlmAgent, BaseAgent
+
+# Define individual agents
+greeter = LlmAgent(name="greeter", model="gemini-2.0-flash", ...)
+task_executor = LlmAgent(name="task_executor", model="gemini-2.0-flash", ...)
+
+# Create parent agent and assign children via sub_agents
+coordinator = LlmAgent(
+    name="Coordinator",
+    model="gemini-2.0-flash",
+    description="I coordinate greetings and tasks.",
+    sub_agents=[ # Assign sub_agents here
+        greeter,
+        task_executor
+    ]
+)
+```
+
+----------------------------------------
+
+TITLE: Define a Single ADK Agent
+DESCRIPTION: Illustrates how to define a single AI agent using the Google ADK Python library. This example sets up a 'search_assistant' agent with a specified model, instruction, description, and integrates a 'google_search' tool to enable web search capabilities.
+SOURCE: https://github.com/google/adk-python/blob/main/llms.txt#_snippet_1
+
+LANGUAGE: Python
+CODE:
+```
+from google.adk.agents import Agent
+from google.adk.tools import google_search
+
+root_agent = Agent(
+    name="search_assistant",
+    model="gemini-2.0-flash", # Or your preferred Gemini model
+    instruction="You are a helpful assistant. Answer user questions using Google Search when needed.",
+    description="An assistant that can search the web.",
+    tools=[google_search]
+)
+```
+
+----------------------------------------
+
+TITLE: Set Ollama API Base URL and Run ADK Web Interface
+DESCRIPTION: These commands set the `OLLAMA_API_BASE` environment variable, which LiteLLM uses to locate the Ollama server, and then launch the ADK web interface. This configuration is necessary when using the `ollama_chat` provider to ensure the agent can communicate with the local Ollama instance.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/hello_world_ollama/README.md#_snippet_4
+
+LANGUAGE: bash
+CODE:
+```
+export OLLAMA_API_BASE="http://localhost:11434"
+adk web
+```
+
+----------------------------------------
+
+TITLE: Run Python ADK Agent
+DESCRIPTION: This command executes the Python ADK agent script. It initiates the agent, which then handles interactions with Google Calendar. Upon first use, it may trigger an OAuth consent flow in the user's browser for authentication, allowing the agent to make authenticated API calls on behalf of the user.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/integration_connector_euc_agent/README.md#_snippet_1
+
+LANGUAGE: bash
+CODE:
+```
+python agent.py
+```
+
+----------------------------------------
+
+TITLE: Install Locally Built Wheel File
+DESCRIPTION: Installs the locally built Python wheel file into the active virtual environment using `pip`. This allows for testing the package as if it were installed from a package index.
+SOURCE: https://github.com/google/adk-python/blob/main/CONTRIBUTING.md#_snippet_8
+
+LANGUAGE: shell
+CODE:
+```
+pip install dist/google_adk-<version>-py3-none-any.whl
+```
+
+----------------------------------------
+
+TITLE: Create SQLite Database File
+DESCRIPTION: Initializes a new SQLite database file named 'tool_box.db'. If the file already exists, this command opens it for interaction. This is a prerequisite for storing and managing data for the agent.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/toolbox_agent/README.md#_snippet_1
+
+LANGUAGE: bash
+CODE:
+```
+sqlite3 tool_box.db
+```
+
+----------------------------------------
+
+TITLE: Python Module Import Convention for ADK Source
+DESCRIPTION: This example illustrates the correct way to import specific objects from a module within the ADK source. It emphasizes importing directly from the module file rather than from the package's `__init__.py` file, which can lead to circular dependencies or unexpected behavior.
+SOURCE: https://github.com/google/adk-python/blob/main/AGENTS.md#_snippet_2
+
+LANGUAGE: python
+CODE:
+```
+# DO
+from ..agents.llm_agent import LlmAgent
+
+# DON'T
+from ..agents  import LlmAgent # import from agents/__init__.py
+```
+
+----------------------------------------
+
+TITLE: Auto-format Code with autoformat.sh
+DESCRIPTION: Runs the `autoformat.sh` script to automatically format the project's code using `isort` and `pyink`. This ensures adherence to the project's coding style guidelines.
+SOURCE: https://github.com/google/adk-python/blob/main/CONTRIBUTING.md#_snippet_5
+
+LANGUAGE: shell
+CODE:
+```
+./autoformat.sh
+```
+
+----------------------------------------
+
+TITLE: Define and Populate Hotels Table in SQLite
+DESCRIPTION: Creates a 'hotels' table within the SQLite database with a predefined schema including columns for ID, name, location, price tier, check-in/out dates, and booking status. It then populates this table with ten sample hotel records.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/toolbox_agent/README.md#_snippet_2
+
+LANGUAGE: sql
+CODE:
+```
+CREATE TABLE hotels(
+  id            INTEGER NOT NULL PRIMARY KEY,
+  name          VARCHAR NOT NULL,
+  location      VARCHAR NOT NULL,
+  price_tier    VARCHAR NOT NULL,
+  checkin_date  DATE    NOT NULL,
+  checkout_date DATE    NOT NULL,
+  booked        BIT     NOT NULL
+);
+
+
+INSERT INTO hotels(id, name, location, price_tier, checkin_date, checkout_date, booked)
+VALUES 
+  (1, 'Hilton Basel', 'Basel', 'Luxury', '2024-04-22', '2024-04-20', 0),
+  (2, 'Marriott Zurich', 'Zurich', 'Upscale', '2024-04-14', '2024-04-21', 0),
+  (3, 'Hyatt Regency Basel', 'Basel', 'Upper Upscale', '2024-04-02', '2024-04-20', 0),
+  (4, 'Radisson Blu Lucerne', 'Lucerne', 'Midscale', '2024-04-24', '2024-04-05', 0),
+  (5, 'Best Western Bern', 'Bern', 'Upper Midscale', '2024-04-23', '2024-04-01', 0),
+  (6, 'InterContinental Geneva', 'Geneva', 'Luxury', '2024-04-23', '2024-04-28', 0),
+  (7, 'Sheraton Zurich', 'Zurich', 'Upper Upscale', '2024-04-27', '2024-04-02', 0),
+  (8, 'Holiday Inn Basel', 'Basel', 'Upper Midscale', '2024-04-24', '2024-04-09', 0),
+  (9, 'Courtyard Zurich', 'Zurich', 'Upscale', '2024-04-03', '2024-04-13', 0),
+  (10, 'Comfort Inn Bern', 'Bern', 'Midscale', '2024-04-04', '2024-04-16', 0);
+```
+
+----------------------------------------
+
+TITLE: Start ADK Web Server
+DESCRIPTION: This command initiates the ADK web server, which hosts the multi-agent application. It should be executed from the root directory containing the 'live_bidi_streaming_agent' folder. Once running, the server provides a local URL to access the ADK Web UI.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/live_bidi_streaming_multi_agent/readme.md#_snippet_0
+
+LANGUAGE: bash
+CODE:
+```
+adk web
+```
+
+----------------------------------------
+
+TITLE: Prepare Environment for Local Wheel Testing
+DESCRIPTION: Sets up a clean virtual environment for testing a locally built wheel file. It defines a path for the new environment, deactivates any existing one, and then creates and activates a fresh Python 3 environment.
+SOURCE: https://github.com/google/adk-python/blob/main/CONTRIBUTING.md#_snippet_7
+
+LANGUAGE: shell
+CODE:
+```
+VENV_PATH=~/venvs/adk-quickstart
+```
+
+LANGUAGE: shell
+CODE:
+```
+command -v deactivate >/dev/null 2>&1 && deactivate
+```
+
+LANGUAGE: shell
+CODE:
+```
+rm -rf $VENV_PATH \
+  && python3 -m venv $VENV_PATH \
+  && source $VENV_PATH/bin/activate
+```
+
+----------------------------------------
+
+TITLE: Run Main ADK Web Server
+DESCRIPTION: Command to start the main ADK web server, which hosts the root agent and local sub-agents. This should be run in a separate terminal from the remote A2A server.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/a2a_basic/README.md#_snippet_1
+
+LANGUAGE: bash
+CODE:
+```
+adk web contributing/samples/
+```
+
+----------------------------------------
+
+TITLE: Configure Environment Variables for ADK Agent
+DESCRIPTION: This snippet provides the necessary environment variables to configure the ADK agent for Google Calendar integration. It includes placeholders for connection details (name, project, location) and OAuth 2.0 client credentials (ID, secret), which are crucial for authentication and connecting to the Google Calendar API via Integration Connectors. These variables should be placed in a .env file.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/integration_connector_euc_agent/README.md#_snippet_0
+
+LANGUAGE: dotenv
+CODE:
+```
+CONNECTION_NAME=<YOUR_CALENDAR_CONNECTION_NAME>
+CONNECTION_PROJECT=<YOUR_GOOGLE_CLOUD_PROJECT_ID>
+CONNECTION_LOCATION=<YOUR_CONNECTION_LOCATION>
+CLIENT_ID=<YOUR_OAUTH_CLIENT_ID>
+CLIENT_SECRET=<YOUR_OAUTH_CLIENT_SECRET>
+```
+
+----------------------------------------
+
+TITLE: Run Main ADK Web Server
+DESCRIPTION: Start the main ADK web server in a separate terminal. This server hosts the root agent, which orchestrates interactions and delegates tasks to other agents, making the multi-agent system accessible for user interaction.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/a2a_auth/README.md#_snippet_2
+
+LANGUAGE: bash
+CODE:
+```
+adk web contributing/samples/
+```
+
+----------------------------------------
+
+TITLE: Start Local MCP Server for ADK Python Agent
+DESCRIPTION: This command initiates the local MCP server, which is a prerequisite for the Google ADK Python agent to function correctly. It utilizes the 'uv' tool to execute the 'filesystem_server.py' script.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/mcp_streamablehttp_agent/README.md#_snippet_0
+
+LANGUAGE: bash
+CODE:
+```
+uv run filesystem_server.py
+```
+
+----------------------------------------
+
+TITLE: Run Unit Tests with pytest
+DESCRIPTION: Executes the unit tests for the project using `pytest`. The first command runs all unit tests, while the second demonstrates how to install specific extra dependencies (`test`, `eval`, `a2a`) before running tests for more accurate failure reproduction.
+SOURCE: https://github.com/google/adk-python/blob/main/CONTRIBUTING.md#_snippet_4
+
+LANGUAGE: shell
+CODE:
+```
+pytest ./tests/unittests
+```
+
+LANGUAGE: shell
+CODE:
+```
+uv sync --extra test --extra eval --extra a2a
+pytest ./tests/unittests
+```
+
+----------------------------------------
+
+TITLE: Run ADK Issue Triaging Assistant in Interactive Web Mode
+DESCRIPTION: This command starts the ADK Issue Triaging Assistant in interactive web mode. It launches a local server and provides a URL to access the agent's web interface, allowing users to review and confirm label recommendations before application.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/adk_triaging_agent/README.md#_snippet_0
+
+LANGUAGE: bash
+CODE:
+```
+adk web
+```
+
+----------------------------------------
+
+TITLE: Run the ADK Agent Script
+DESCRIPTION: This command executes the main Python agent script. Running this command starts the ADK agent, enabling it to process prompts and interact with the configured Jira instance through the Application Integration Toolset.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/application_integration_agent/README.md#_snippet_1
+
+LANGUAGE: bash
+CODE:
+```
+python agent.py
+```
+
+----------------------------------------
+
+TITLE: Create Python Virtual Environment with uv
+DESCRIPTION: Creates a new Python virtual environment named `.venv` using `uv`, specifically targeting Python 3.11. This isolates project dependencies and ensures a clean development environment.
+SOURCE: https://github.com/google/adk-python/blob/main/CONTRIBUTING.md#_snippet_1
+
+LANGUAGE: shell
+CODE:
+```
+uv venv --python "python3.11" ".venv"
+```
+
+----------------------------------------
+
+TITLE: Activate Python Virtual Environment
+DESCRIPTION: Activates the previously created virtual environment, making its Python interpreter and installed packages available in the current shell session. Separate commands are provided for Unix-like systems (Linux/macOS) and Windows.
+SOURCE: https://github.com/google/adk-python/blob/main/CONTRIBUTING.md#_snippet_2
+
+LANGUAGE: shell
+CODE:
+```
+source .venv/bin/activate
+```
+
+LANGUAGE: shell
+CODE:
+```
+source .\.venv\Scripts\activate
+```
+
+----------------------------------------
+
+TITLE: Define a Multi-Agent System with ADK
+DESCRIPTION: Demonstrates how to construct a multi-agent system by defining individual agents and then composing them into a hierarchical structure using a coordinator agent. This setup allows the ADK engine to guide multiple agents to collaborate and accomplish complex tasks.
+SOURCE: https://github.com/google/adk-python/blob/main/llms.txt#_snippet_2
+
+LANGUAGE: Python
+CODE:
+```
+from google.adk.agents import LlmAgent, BaseAgent
+
+# Define individual agents
+greeter = LlmAgent(name="greeter", model="gemini-2.0-flash", ...)
+task_executor = LlmAgent(name="task_executor", model="gemini-2.0-flash", ...)
+
+# Create parent agent and assign children via sub_agents
+coordinator = LlmAgent(
+    name="Coordinator",
+    model="gemini-2.0-flash",
+    description="I coordinate greetings and tasks.",
+    sub_agents=[ # Assign sub_agents here
+        greeter,
+        task_executor
+    ]
+)
+```
+
+----------------------------------------
+
+TITLE: Start Remote BigQuery Agent Server
+DESCRIPTION: Launch the remote Agent-to-Agent (A2A) server that hosts the BigQuery agent. This server runs on a specified port (e.g., 8001) and is responsible for serving the BigQuery agent's functionalities, including handling OAuth authentication requests.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/a2a_auth/README.md#_snippet_1
+
+LANGUAGE: bash
+CODE:
+```
+adk api_server --a2a --port 8001 contributing/samples/a2a_auth/remote_a2a
+```
+
+----------------------------------------
+
+TITLE: Start ADK Remote A2A Approval Agent Server
+DESCRIPTION: This command initiates the remote Agent-to-Agent (A2A) server, which hosts the human-in-the-loop approval agent. It configures the server to listen on port 8001 and serves the agent located at the specified path, enabling asynchronous human approval workflows for delegated tasks.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/a2a_human_in_loop/README.md#_snippet_0
+
+LANGUAGE: bash
+CODE:
+```
+adk api_server --a2a --port 8001 contributing/samples/a2a_human_in_loop/remote_a2a
+```
+
+----------------------------------------
+
+TITLE: ADK Agent Discovery Conventions (Python)
+DESCRIPTION: This section outlines the essential Python file conventions for ADK agent discovery. The `agent.py` file must define the main agent and assign it to the `root_agent` variable, making it discoverable by ADK tools. Additionally, each agent directory's `__init__.py` file requires an import statement to ensure the agent module is properly exposed.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/adk_project_overview_and_architecture.md#_snippet_0
+
+LANGUAGE: Python
+CODE:
+```
+# In agent.py:
+root_agent = Agent(...)
+
+# In __init__.py within the agent directory:
+from . import agent
+```
+
+----------------------------------------
+
+TITLE: Start Local MCP Server for Google ADK Python Agent
+DESCRIPTION: This command initiates the local MCP server, which is a necessary prerequisite for the Google ADK Python agent to function correctly. The server is launched using 'uv', a fast Python package installer and runner, executing the 'filesystem_server.py' script.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/mcp_sse_agent/README.md#_snippet_0
+
+LANGUAGE: bash
+CODE:
+```
+uv run filesystem_server.py
+```
+
+----------------------------------------
+
+TITLE: Main Agent (agent.py) Components
+DESCRIPTION: Describes the key components and their roles within the main agent's `agent.py` file, including function tools and agent configurations for local and remote interactions.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/a2a_basic/README.md#_snippet_2
+
+LANGUAGE: APIDOC
+CODE:
+```
+roll_die(sides: int)
+  - Function tool for rolling dice.
+  - Parameters:
+    - sides: The number of sides on the die (integer).
+roll_agent
+  - Local agent specialized in dice rolling operations.
+prime_agent
+  - Remote A2A agent configuration, used to connect to the remote prime checking service.
+root_agent
+  - Main orchestrator agent with delegation logic, responsible for coordinating tasks between sub-agents.
+```
+
+----------------------------------------
+
+TITLE: Remote Prime Agent Components
+DESCRIPTION: Details the structure and key components of the remote prime checking agent, including its implementation file, agent card, and the core prime checking function.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/a2a_basic/README.md#_snippet_3
+
+LANGUAGE: APIDOC
+CODE:
+```
+agent.py
+  - Implementation of the prime checking service logic.
+agent.json
+  - Agent card defining the A2A agent's capabilities and metadata.
+check_prime(nums: list[int])
+  - Prime number checking algorithm.
+  - Parameters:
+    - nums: A list of integers to check for primality.
+```
+
+----------------------------------------
+
+TITLE: Configure ADK Agent with LiteLLM `ollama_chat` Provider
+DESCRIPTION: This Python code demonstrates how to initialize an ADK `Agent` using the `LiteLlm` wrapper with the `ollama_chat` provider. It sets up an agent with a specific Ollama model, a name, description, instruction, and a list of tools it can use. The `ollama_chat` provider is crucial for proper tool calling and context handling within ADK.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/hello_world_ollama/README.md#_snippet_3
+
+LANGUAGE: python
+CODE:
+```
+root_agent = Agent(
+    model=LiteLlm(model="ollama_chat/mistral-small3.1"),
+    name="dice_agent",
+    description=(
+        "hello world agent that can roll a dice of 8 sides and check prime"
+        " numbers."
+    ),
+    instruction="""
+      You roll dice and answer questions about the outcome of the dice rolls.
+    """,
+    tools=[
+        roll_die,
+        check_prime,
+    ],
+)
+```
+
+----------------------------------------
+
+TITLE: ADK Agent Components and Tools for Human-in-the-Loop Workflow
+DESCRIPTION: This section outlines the key components and function tools used in the ADK Human-in-the-Loop sample. It details the main agent's reimbursement function, the configuration for the remote A2A approval agent, and the long-running tool responsible for handling approval requests, illustrating the interaction points for human intervention.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/a2a_human_in_loop/README.md#_snippet_2
+
+LANGUAGE: APIDOC
+CODE:
+```
+Main Agent (agent.py):
+  reimburse(purpose: str, amount: float)
+    - Description: Function tool for processing reimbursement requests.
+    - Parameters:
+      - purpose (str): The reason for the reimbursement.
+      - amount (float): The amount to be reimbursed.
+    - Usage: Called by the agent to initiate a reimbursement, which may trigger an approval workflow based on the amount.
+
+  approval_agent
+    - Description: Configuration for the remote A2A agent responsible for human approval workflows.
+    - Type: Remote A2A Agent Configuration
+    - Purpose: Defines how the root agent communicates with and delegates approval tasks to the remote approval agent.
+
+  root_agent
+    - Description: The main reimbursement agent that contains the core logic for automatic and manual approval processes.
+    - Type: Main Agent Instance
+    - Purpose: Orchestrates the reimbursement process, deciding whether to auto-approve or escalate to the approval agent.
+
+Remote Approval Agent (remote_a2a/human_in_loop/):
+  ask_for_approval()
+    - Description: A long-running tool within the approval agent that handles requests for human approval.
+    - Type: LongRunningFunctionTool
+    - Purpose: Pauses execution and waits for external human input to approve or reject a request, surfacing the request back to the root agent.
+    - Dependencies: Relies on external human interaction and asynchronous communication mechanisms.
+```
+
+----------------------------------------
+
+TITLE: Enable LiteLLM Debugging for Request Inspection
+DESCRIPTION: This Python snippet enables debug logging for the LiteLLM library, allowing developers to inspect the exact requests sent to the language model server (e.g., Ollama). This is invaluable for troubleshooting connectivity issues, verifying payload correctness, and understanding how LiteLLM interacts with the backend.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/hello_world_ollama/README.md#_snippet_7
+
+LANGUAGE: python
+CODE:
+```
+import litellm
+litellm._turn_on_debug()
+```
+
+----------------------------------------
+
+TITLE: Define a Single Agent with ADK Python
+DESCRIPTION: This Python snippet demonstrates how to define a single AI agent using the ADK framework. It initializes an `Agent` instance with a name, a specified Gemini model, an instruction, a description, and integrates a `google_search` tool to enable web search capabilities.
+SOURCE: https://github.com/google/adk-python/blob/main/README.md#_snippet_2
+
+LANGUAGE: python
+CODE:
+```
+from google.adk.agents import Agent
+from google.adk.tools import google_search
+
+root_agent = Agent(
+    name="search_assistant",
+    model="gemini-2.0-flash", # Or your preferred Gemini model
+    instruction="You are a helpful assistant. Answer user questions using Google Search when needed.",
+    description="An assistant that can search the web.",
+    tools=[google_search]
+)
+```
+
+----------------------------------------
+
+TITLE: Configure OAuth Client Credentials
+DESCRIPTION: Add your OAuth client ID and client secret to your `.env` file for Interactive OAuth authentication.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/bigquery/README.md#_snippet_5
+
+LANGUAGE: Python
+CODE:
+```
+OAUTH_CLIENT_ID={your client id}
+OAUTH_CLIENT_SECRET={your client secret}
+```
+
+----------------------------------------
+
+TITLE: Enable Future Annotations in ADK Python Source
+DESCRIPTION: This snippet shows the mandatory `from __future__ import annotations` import statement. It must be placed at the top of every Python source file, immediately after the open-source header. This enables postponed evaluation of type annotations, allowing forward references to classes without requiring string literals.
+SOURCE: https://github.com/google/adk-python/blob/main/AGENTS.md#_snippet_3
+
+LANGUAGE: python
+CODE:
+```
+# DO THIS, right after the open-source header.
+from __future__ import annotations
+```
+
+LANGUAGE: python
+CODE:
+```
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from __future__ import annotations
+
+# ... the rest of the file.
+```
+
+----------------------------------------
+
+TITLE: Install Python Dependencies for ADK Issue Triaging Assistant
+DESCRIPTION: These commands install the necessary Python libraries for the ADK Issue Triaging Assistant. It first upgrades pip to its latest version, then installs `google-adk` and `requests`, which are essential for the agent's functionality, including interacting with the ADK framework and making HTTP requests.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/adk_triaging_agent/README.md#_snippet_1
+
+LANGUAGE: bash
+CODE:
+```
+pip install --upgrade pip
+pip install google-adk requests
+```
+
+----------------------------------------
+
+TITLE: Python Absolute Import Convention for ADK Tests
+DESCRIPTION: This snippet demonstrates the import convention for ADK test files. Unlike source code, tests should use absolute imports, mirroring how external users would import and utilize the `google.adk` package. This ensures tests accurately reflect real-world usage scenarios.
+SOURCE: https://github.com/google/adk-python/blob/main/AGENTS.md#_snippet_4
+
+LANGUAGE: python
+CODE:
+```
+# DO
+from google.adk.agents.llm_agent import LlmAgent
+
+# DON'T
+from ..agents.llm_agent import LlmAgent
+```
+
+----------------------------------------
+
+TITLE: Google BigQuery Agent Operations
+DESCRIPTION: This section details the BigQuery operations supported by the agent, categorized into Dataset and Table management. These operations allow for listing, retrieving, creating, and managing BigQuery datasets and tables programmatically through the agent interface.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/a2a_auth/README.md#_snippet_4
+
+LANGUAGE: APIDOC
+CODE:
+```
+Dataset Operations:
+  bigquery_datasets_list
+    - Description: Retrieves a list of all datasets accessible by the authenticated user.
+    - Parameters: None
+    - Returns: A list of dataset objects, each containing metadata like ID, name, and creation time.
+
+  bigquery_datasets_get
+    - Description: Fetches detailed information for a specific BigQuery dataset.
+    - Parameters:
+      - dataset_id (string, required): The unique identifier of the dataset to retrieve.
+    - Returns: A dataset object with comprehensive details including project ID, dataset ID, creation date, and access controls.
+
+  bigquery_datasets_insert
+    - Description: Creates a new BigQuery dataset.
+    - Parameters:
+      - dataset_id (string, required): The unique identifier for the new dataset.
+      - properties (object, optional): An object containing additional dataset properties like friendly name, description, and default table expiration.
+    - Returns: The newly created dataset object.
+
+Table Operations:
+  bigquery_tables_list
+    - Description: Retrieves a list of tables within a specified BigQuery dataset.
+    - Parameters:
+      - dataset_id (string, required): The ID of the dataset from which to list tables.
+    - Returns: A list of table objects, each containing metadata like table ID and type.
+
+  bigquery_tables_get
+    - Description: Fetches detailed information for a specific BigQuery table.
+    - Parameters:
+      - dataset_id (string, required): The ID of the dataset containing the table.
+      - table_id (string, required): The unique identifier of the table to retrieve.
+    - Returns: A table object with comprehensive details including schema, creation time, and table size.
+
+  bigquery_tables_insert
+    - Description: Creates a new table within a specified BigQuery dataset.
+    - Parameters:
+      - dataset_id (string, required): The ID of the dataset where the table will be created.
+      - table_id (string, required): The unique identifier for the new table.
+      - schema (array, required): An array of field objects defining the table's columns and their types.
+      - properties (object, optional): An object containing additional table properties like description and expiration time.
+    - Returns: The newly created table object.
+```
+
+----------------------------------------
+
+TITLE: Check Ollama Model Tool Capabilities
+DESCRIPTION: This command displays detailed information about an Ollama model, including its architecture, parameters, context length, embedding length, quantization, and crucially, its capabilities like completion, vision, and tools. It's used to verify if a model supports tool usage, which is essential for agents relying on tools.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/hello_world_ollama/README.md#_snippet_0
+
+LANGUAGE: bash
+CODE:
+```
+ollama show mistral-small3.1
+```
+
+----------------------------------------
+
+TITLE: Python Relative Import Convention for ADK Source
+DESCRIPTION: This snippet demonstrates the preferred method for importing modules within the ADK source code. It uses relative imports to reference other modules within the same package structure, promoting modularity and avoiding absolute paths tied to the package root.
+SOURCE: https://github.com/google/adk-python/blob/main/AGENTS.md#_snippet_1
+
+LANGUAGE: python
+CODE:
+```
+# DO
+from ..agents.llm_agent import LlmAgent
+
+# DON'T
+from google.adk.agents.llm_agent import LlmAgent
+```
+
+----------------------------------------
+
+TITLE: Run ADK Web Server for Main Agent
+DESCRIPTION: This command launches the ADK web server, which is responsible for hosting the main reimbursement agent. It serves agents from the specified samples directory, allowing users to interact with the root agent to process expense requests and manage approval workflows.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/a2a_human_in_loop/README.md#_snippet_1
+
+LANGUAGE: bash
+CODE:
+```
+adk web contributing/samples/
+```
+
+----------------------------------------
+
+TITLE: Run Python Workflow Agent from CLI
+DESCRIPTION: This snippet demonstrates how to execute the `main.py` script, which represents the SequentialAgent, directly from the command line. Users can choose between `uv` (a Python package installer and runner) or the standard `python` interpreter. Ensure `google-adk` is installed prior to running.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/workflow_agent_seq/README.md#_snippet_0
+
+LANGUAGE: Shell
+CODE:
+```
+uv run main.py
+```
+
+LANGUAGE: Shell
+CODE:
+```
+python main.py
+```
+
+----------------------------------------
+
+TITLE: Run ADK Agent with Plugin
+DESCRIPTION: This command executes the main Python script for an ADK agent configured with a basic plugin. It demonstrates how to initiate an ADK application that leverages the plugin's global callback functionalities.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/plugin_basic/README.md#_snippet_0
+
+LANGUAGE: bash
+CODE:
+```
+python3 -m contributing.samples.plugin_basic.main
+```
+
+----------------------------------------
+
+TITLE: Install Google ADK Python Library
+DESCRIPTION: Provides instructions for installing the Google Agent Development Kit (ADK) Python library using pip. It covers both the stable release, recommended for most users, and the development version for accessing the latest features and bug fixes directly from the main branch.
+SOURCE: https://github.com/google/adk-python/blob/main/llms.txt#_snippet_0
+
+LANGUAGE: Shell
+CODE:
+```
+pip install google-adk
+```
+
+LANGUAGE: Shell
+CODE:
+```
+pip install git+https://github.com/google/adk-python.git@main
+```
+
+----------------------------------------
+
+TITLE: Evaluate Agent with ADK CLI
+DESCRIPTION: This command demonstrates how to evaluate an agent using the `adk eval` command-line interface. It takes the agent's sample directory and an evaluation set JSON file as arguments to run tests and assess performance.
+SOURCE: https://github.com/google/adk-python/blob/main/README.md#_snippet_4
+
+LANGUAGE: bash
+CODE:
+```
+adk eval \
+    samples_for_testing/hello_world \
+    samples_for_testing/hello_world/hello_world_eval_set_001.evalset.json
+```
+
+----------------------------------------
+
+TITLE: Install ADK Python Development Version from GitHub
+DESCRIPTION: This command installs the development version of the Google Agent Development Kit (ADK) for Python directly from the GitHub `main` branch. This version includes the newest fixes and features but may contain experimental changes or bugs not present in the stable release.
+SOURCE: https://github.com/google/adk-python/blob/main/README.md#_snippet_1
+
+LANGUAGE: bash
+CODE:
+```
+pip install git+https://github.com/google/adk-python.git@main
+```
+
+----------------------------------------
+
+TITLE: Create Custom Ollama Model from Modelfile
+DESCRIPTION: This command creates a new Ollama model based on a custom Modelfile. It enables users to deploy models with modified templates or other custom settings, facilitating fine-tuned behavior for specific applications or agent requirements.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/hello_world_ollama/README.md#_snippet_2
+
+LANGUAGE: bash
+CODE:
+```
+ollama create llama3.1-modified -f model_file_to_modify
+```
+
+----------------------------------------
+
+TITLE: Run ADK Agent Session State Sample
+DESCRIPTION: Command to execute the sample ADK agent designed to demonstrate the persistence of session state. It uses a predefined input file for replay.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/session_state_agent/README.md#_snippet_0
+
+LANGUAGE: bash
+CODE:
+```
+$ adk run contributing/samples/session_state_agent --replay contributing/samples/session_state_agent/input.json
+```
+
+----------------------------------------
+
+TITLE: Sending Updated Long-Running Tool Response to Agent in Python
+DESCRIPTION: This Python code snippet illustrates how to construct and send an updated `types.FunctionResponse` to an agent after a long-running tool's operation (e.g., human approval) has completed externally. It shows how to populate the `response` field with updated data, ensuring the `id` and `name` match the original `FunctionCall`, and then sending this as a `user` role message to the agent via `runner.run_async`.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/human_in_loop/README.md#_snippet_0
+
+LANGUAGE: python
+CODE:
+```
+# Example: After external approval
+updated_tool_output_data = {
+    "status": "approved",
+    "ticket-id": ticket_id, # from original call
+    # ... other relevant updated data
+}
+
+updated_function_response_part = types.Part(
+    function_response=types.FunctionResponse(
+        id=long_running_function_call.id,   # Original call ID
+        name=long_running_function_call.name, # Original call name
+        response=updated_tool_output_data,
+    )
+)
+
+# Send this back to the agent
+await runner.run_async(
+    # ... session_id, user_id ...
+    new_message=types.Content(
+        parts=[updated_function_response_part], role="user"
+    ),
+)
+```
+
+----------------------------------------
+
+TITLE: Install Python Dependencies for ADK Answering Agent
+DESCRIPTION: These commands install the necessary Python libraries required for the ADK Answering Agent to function. It first upgrades pip to ensure the latest version, then installs `google-adk` and `requests` which are crucial for the agent's operations.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/adk_answering_agent/README.md#_snippet_1
+
+LANGUAGE: bash
+CODE:
+```
+pip install --upgrade pip
+pip install google-adk requests
+```
+
+----------------------------------------
+
+TITLE: Configure LLM Service Environment Variables
+DESCRIPTION: Set up environment variables in your `.env` file to specify the LLM service for your agent, such as Google AI Studio or Google Cloud Vertex AI.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/bigquery/README.md#_snippet_1
+
+LANGUAGE: Python
+CODE:
+```
+GOOGLE_GENAI_USE_VERTEXAI=FALSE
+GOOGLE_API_KEY={your api key}
+```
+
+----------------------------------------
+
+TITLE: Sample Output of ADK Agent Session State Demonstration
+DESCRIPTION: Illustrative output from running the ADK agent sample, showing the state of cached and persisted keys at different callback stages (before_agent, before_model, after_model, after_agent). This output verifies the session state's lifecycle.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/session_state_agent/README.md#_snippet_1
+
+LANGUAGE: bash
+CODE:
+```
+[user]: hello world!
+===================== In before_agent_callback ==============================
+** Asserting keys are cached in context: ['before_agent_callback_state_key'] pass ✅
+** Asserting keys are already persisted in session: [] pass ✅
+** Asserting keys are not persisted in session yet: ['before_agent_callback_state_key'] pass ✅
+============================================================
+===================== In before_model_callback ==============================
+** Asserting keys are cached in context: ['before_agent_callback_state_key', 'before_model_callback_state_key'] pass ✅
+** Asserting keys are already persisted in session: ['before_agent_callback_state_key'] pass ✅
+** Asserting keys are not persisted in session yet: ['before_model_callback_state_key'] pass ✅
+============================================================
+===================== In after_model_callback ==============================
+** Asserting keys are cached in context: ['before_agent_callback_state_key', 'before_model_callback_state_key', 'after_model_callback_state_key'] pass ✅
+** Asserting keys are already persisted in session: ['before_agent_callback_state_key'] pass ✅
+** Asserting keys are not persisted in session yet: ['before_model_callback_state_key', 'after_model_callback_state_key'] pass ✅
+============================================================
+[root_agent]: Hello! How can I help you verify something today?
+
+===================== In after_agent_callback ==============================
+** Asserting keys are cached in context: ['before_agent_callback_state_key', 'before_model_callback_state_key', 'after_model_callback_state_key', 'after_agent_callback_state_key'] pass ✅
+** Asserting keys are already persisted in session: ['before_agent_callback_state_key', 'before_model_callback_state_key', 'after_model_callback_state_key'] pass ✅
+** Asserting keys are not persisted in session yet: ['after_agent_callback_state_key'] pass ✅
+============================================================
+```
+
+----------------------------------------
+
+TITLE: Export Ollama Model Modelfile for Customization
+DESCRIPTION: This command exports the Modelfile of a specified Ollama model to a file, allowing users to inspect and modify its template and other configurations. The output can then be used to create a new custom model with tailored behavior.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/hello_world_ollama/README.md#_snippet_1
+
+LANGUAGE: bash
+CODE:
+```
+ollama show --modelfile llama3.1 > model_file_to_modify
+```
+
+----------------------------------------
+
+TITLE: Set OAuth Credentials Environment Variables
+DESCRIPTION: Before running the ADK agents, set the Google OAuth client ID and client secret as environment variables. These credentials are crucial for the OAuth authentication flow, enabling the agents to interact securely with Google services.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/a2a_auth/README.md#_snippet_0
+
+LANGUAGE: bash
+CODE:
+```
+export OAUTH_CLIENT_ID=your_google_oauth_client_id
+export OAUTH_CLIENT_SECRET=your_google_oauth_client_secret
+```
+
+----------------------------------------
+
+TITLE: Run ADK Answering Agent in Interactive Web Mode
+DESCRIPTION: This command initiates the ADK Answering Agent in interactive mode, launching a local web server. It allows users to review and approve agent-generated responses before they are posted to GitHub discussions, providing real-time control and requiring pre-configured environment variables.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/adk_answering_agent/README.md#_snippet_0
+
+LANGUAGE: bash
+CODE:
+```
+adk web
+```
+
+----------------------------------------
+
+TITLE: Run Unit Tests for ADK Python
+DESCRIPTION: This Bash command executes the unit tests for the ADK Python project using `pytest`. It specifically targets the `tests/unittests` directory, allowing developers to run a focused suite of tests to verify individual components and functionalities.
+SOURCE: https://github.com/google/adk-python/blob/main/AGENTS.md#_snippet_5
+
+LANGUAGE: bash
+CODE:
+```
+pytest tests/unittests
+```
+
+----------------------------------------
+
+TITLE: Evaluate ADK Agents via Command Line
+DESCRIPTION: Shows the command-line interface (CLI) usage for evaluating ADK agents. This command initiates an evaluation process using a specified agent project directory and an evaluation dataset, facilitating testing and debugging of agent performance.
+SOURCE: https://github.com/google/adk-python/blob/main/llms.txt#_snippet_3
+
+LANGUAGE: Shell
+CODE:
+```
+adk eval \
+    samples_for_testing/hello_world \
+    samples_for_testing/hello_world/hello_world_eval_set_001.evalset.json
+```
+
+----------------------------------------
+
+TITLE: Configure Jira Connection Environment Variables
+DESCRIPTION: This snippet shows the environment variables required to connect the ADK agent to a Google Cloud Integration connection for Jira. These variables, typically stored in a `.env` file, specify the connection name, Google Cloud project ID, and the location of your integration connection.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/application_integration_agent/README.md#_snippet_0
+
+LANGUAGE: dotenv
+CODE:
+```
+CONNECTION_NAME=<YOUR_JIRA_CONNECTION_NAME>
+CONNECTION_PROJECT=<YOUR_GOOGLE_CLOUD_PROJECT_ID>
+CONNECTION_LOCATION=<YOUR_CONNECTION_LOCATION>
+```
+
+----------------------------------------
+
+TITLE: Configure Agent Credentials Type for OAuth2
+DESCRIPTION: Set the `CREDENTIALS_TYPE` in `agent.py` to `AuthCredentialTypes.OAUTH2` when using Interactive OAuth for authentication.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/bigquery/README.md#_snippet_4
+
+LANGUAGE: Python
+CODE:
+```
+CREDENTIALS_TYPE=AuthCredentialTypes.OAUTH2
+```
+
+----------------------------------------
+
+TITLE: Run Autoformat Script for ADK Python
+DESCRIPTION: This Bash command executes the `autoformat.sh` script located in the `open_source_workspace/` directory. This script helps organize imports and resolve formatting issues within the ADK Python project, ensuring adherence to the defined style guidelines.
+SOURCE: https://github.com/google/adk-python/blob/main/AGENTS.md#_snippet_0
+
+LANGUAGE: bash
+CODE:
+```
+./autoformat.sh
+```
+
+----------------------------------------
+
+TITLE: Execute ADK Answering Agent in Batch Script Mode
+DESCRIPTION: These commands run the ADK Answering Agent in batch processing mode, enabling it to answer multiple GitHub discussions in a single run. Users can specify discussions by their numbers or process a set number of the most recently updated discussions, requiring environment variables and Python dependencies.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/adk_answering_agent/README.md#_snippet_3
+
+LANGUAGE: bash
+CODE:
+```
+export PYTHONPATH=contributing/samples
+python -m adk_answering_agent.answer_discussions --numbers 27 36
+```
+
+LANGUAGE: bash
+CODE:
+```
+python -m adk_answering_agent.answer_discussions --recent 10
+```
+
+----------------------------------------
+
+TITLE: Define Google Sans Font Faces with Unicode Ranges
+DESCRIPTION: This CSS snippet defines multiple `@font-face` rules for the 'Google Sans' font. It includes both italic and normal styles, each with a range of font weights (400-700). Each font variant is linked to a specific WOFF2 font file URL and optimized for particular unicode character ranges, ensuring efficient loading and display of text across various languages and symbols.
+SOURCE: https://github.com/google/adk-python/blob/main/src/google/adk/cli/browser/index.html#_snippet_1
+
+LANGUAGE: CSS
+CODE:
+```
+@font-face{font-family:'Google Sans';font-style:italic;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaXrENHsxJlGDuGo1OIlL3L2JB874GPhFI9_IqmuTCcjshE7g.woff2) format('woff2');unicode-range:U+0964-0965, U+0B82-0BFA, U+200C-200D, U+20B9, U+25CC;}@font-face{font-family:'Google Sans';font-style:italic;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaXrENHsxJlGDuGo1OIlL3L2JB874GPhFI9_IqmuTCWjshE7g.woff2) format('woff2');unicode-range:U+0951-0952, U+0964-0965, U+0C00-0C7F, U+1CDA, U+1CF2, U+200C-200D, U+25CC;}@font-face{font-family:'Google Sans';font-style:italic;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaXrENHsxJlGDuGo1OIlL3L2JB874GPhFI9_IqmuTCejshE7g.woff2) format('woff2');unicode-range:U+02D7, U+0303, U+0331, U+0E01-0E5B, U+200C-200D, U+25CC;}@font-face{font-family:'Google Sans';font-style:italic;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaXrENHsxJlGDuGo1OIlL3L2JB874GPhFI9_IqmuTCFjshE7g.woff2) format('woff2');unicode-range:U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;}@font-face{font-family:'Google Sans';font-style:italic;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaXrENHsxJlGDuGo1OIlL3L2JB874GPhFI9_IqmuTCEjshE7g.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;}@font-face{font-family:'Google Sans';font-style:italic;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaXrENHsxJlGDuGo1OIlL3L2JB874GPhFI9_IqmuTCKjsg.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}@font-face{font-family:'Google Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2rgCIlsw.woff2) format('woff2');unicode-range:U+0308, U+0530-058F, U+2010, U+2024, U+25CC, U+FB13-FB17;}@font-face{font-family:'Google Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2rACIlsw.woff2) format('woff2');unicode-range:U+0951-0952, U+0964-0965, U+0980-09FE, U+1CD0, U+1CD2, U+1CD5-1CD6, U+1CD8, U+1CE1, U+1CEA, U+1CED, U+1CF2, U+1CF5-1CF7, U+200C-200D, U+20B9, U+25CC, U+A8F1;}@font-face{font-family:'Google Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2kQCIlsw.woff2) format('woff2');unicode-range:U+02C7, U+02D8-02D9, U+02DB, U+0307, U+1400-167F, U+18B0-18F5, U+25CC, U+11AB0-11ABF;}@font-face{font-family:'Google Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2swCIlsw.woff2) format('woff2');unicode-range:U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;}@font-face{font-family:'Google Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2ugCIlsw.woff2) format('woff2');unicode-range:U+0301, U+0400-045F, U+049
+```
+
+----------------------------------------
+
+TITLE: Install Python Dependency for YouTube Search
+DESCRIPTION: This command installs the `youtube_search` Python package using `uv pip`. This package is a required dependency for the Langchain Youtube Search Agent to function correctly, enabling it to interact with YouTube search functionalities.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/langchain_youtube_search_agent/README.md#_snippet_0
+
+LANGUAGE: python
+CODE:
+```
+uv pip install youtube_search
+```
+
+----------------------------------------
+
+TITLE: Install ADK Python Stable Release via pip
+DESCRIPTION: This command installs the latest stable version of the Google Agent Development Kit (ADK) for Python from PyPI. It is recommended for most users to ensure stability and access to the most recent official release.
+SOURCE: https://github.com/google/adk-python/blob/main/README.md#_snippet_0
+
+LANGUAGE: bash
+CODE:
+```
+pip install google-adk
+```
+
+----------------------------------------
+
+TITLE: Define Google Sans Font Faces for Various Unicode Ranges
+DESCRIPTION: This CSS snippet defines multiple @font-face rules for the 'Google Sans' font. Each rule specifies a different unicode-range and a corresponding font file URL, allowing browsers to load only the necessary font subsets based on the characters used on the page. This approach optimizes performance by reducing font download sizes.
+SOURCE: https://github.com/google/adk-python/blob/main/src/google/adk/cli/browser/index.html#_snippet_0
+
+LANGUAGE: CSS
+CODE:
+```
+@font-face{font-family:'Google Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2kQCIlsw.woff2) format('woff2');unicode-range:U+02C7, U+02D8-02D9, U+02DB, U+0307, U+1400-167F, U+18B0-18F5, U+25CC, U+11AB0-11ABF;}@font-face{font-family:'Google Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2swCIlsw.woff2) format('woff2');unicode-range:U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;}@font-face{font-family:'Google Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2ugCIlsw.woff2) format('woff2');unicode-range:U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;}@font-face{font-family:'Google Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2vwCIlsw.woff2) format('woff2');unicode-range:U+0900-097F, U+1CD0-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B09;}@font-face{font-family:'Google Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2rwCIlsw.woff2) format('woff2');unicode-range:U+030E, U+1200-1399, U+2D80-2DDE, U+AB01-AB2E, U+1E7E0-1E7E6, U+1E7E8-1E7EB, U+1E7ED-1E7EE, U+1E7F0-1E7FE;}@font-face{font-family:'Google Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2oQCIlsw.woff2) format('woff2');unicode-range:U+0589, U+10A0-10FF, U+1C90-1CBA, U+1CBD-1CBF, U+205A, U+2D00-2D2F, U+2E31;}@font-face{font-family:'Google Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2sgCIlsw.woff2) format('woff2');unicode-range:U+1F00-1FFF;}@font-face{font-family:'Google Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2vQCIlsw.woff2) format('woff2');unicode-range:U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;}@font-face{font-family:'Google Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2pQCIlsw.woff2) format('woff2');unicode-range:U+0951-0952, U+0964-0965, U+0A80-0AFF, U+200C-200D, U+20B9, U+25CC, U+A830-A839;}@font-face{font-family:'Google Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2nQCIlsw.woff2) format('woff2');unicode-range:U+0951-0952, U+0964-0965, U+0A01-0A76, U+200C-200D, U+20B9, U+25CC, U+262C, U+A830-A839;}@font-face{font-family:'Google Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2vACIlsw.woff2) format('woff2');unicode-range:U+0307-0308, U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F;}@font-face{font-family:'Google Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2tQCIlsw.woff2) format('woff2');unicode-range:U+1780-17FF, U+19E0-19FF, U+200C-200D, U+25CC;}@font-face{font-family:'Google Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2twCIlsw.woff2) format('woff2');unicode-range:U+0E81-0EDF, U+200C-200D, U+25CC;}@font-face{font-family:'Google Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2pgCIlsw.woff2) format('woff2');unicode-range:U+0307, U+0323, U+0951-0952, U+0964-0965, U+0D00-0D7F, U+1CDA, U+1CF2, U+200C-200D, U+20B9, U+25CC, U+A830-A832;}@font-face{font-family:'Google Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2pwCIlsw.woff2) format('woff2');unicode-range:U+0951-0952, U+0964-0965, U+0B01-0B77, U+1CDA, U+1CF2, U+200C-200D, U+20B9, U+25CC;}@font-face{font-family:'Google Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(https://fonts.gstatic.com/s/googlesans/v64/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2owCIlsw.woff2) format('woff2');unicode-range:U+0951-0952, U+0964-0965, U+0980-09FE, U+1CD0, U+1CD2, U+1CD5-1CD6, U+1CD8, U+1CE1, U+1CEA, U+1CED, U+1CF2, U+1CF5-1CF7, U+200C-200D, U+20B9, U+25CC, U+A8F1;}
+```
+
+----------------------------------------
+
+TITLE: Configure Agent Credentials Type for Service Account
+DESCRIPTION: Set the `CREDENTIALS_TYPE` in `agent.py` to `AuthCredentialTypes.SERVICE_ACCOUNT` when using a service account key for authentication.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/bigquery/README.md#_snippet_3
+
+LANGUAGE: Python
+CODE:
+```
+CREDENTIALS_TYPE=AuthCredentialTypes.SERVICE_ACCOUNT
+```
+
+----------------------------------------
+
+TITLE: Configure Agent Credentials Type for ADC
+DESCRIPTION: Set the `CREDENTIALS_TYPE` in `agent.py` to `None` when using Application Default Credentials (ADC) for authentication.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/bigquery/README.md#_snippet_2
+
+LANGUAGE: Python
+CODE:
+```
+CREDENTIALS_TYPE=None
+```
+
+----------------------------------------
+
+TITLE: Authenticate Google Cloud for ADK Answering Agent
+DESCRIPTION: This command performs gcloud authentication, which is essential for the ADK Answering Agent to connect to Google Cloud services like Vertex AI. It sets up application-default credentials, allowing the agent to access required resources.
+SOURCE: https://github.com/google/adk-python/blob/main/contributing/samples/adk_answering_agent/README.md#_snippet_2
+
+LANGUAGE: bash
+CODE:
+```
+gcloud auth application-default login
+```
